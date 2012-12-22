@@ -286,12 +286,12 @@ select_sampler(const char *name)
 	if (name[0] == 'i') {
 		sampler.data_type = GL_INT;
 		sampler.format = GL_RGBA_INTEGER;
-		sampler.internal_format = GL_RGBA32I;
+		sampler.internal_format = GL_RGBA8I;//GL_RGBA32I;
 		sampler.return_type = "ivec4";
 	} else if (name[0] == 'u') {
 		sampler.data_type = GL_UNSIGNED_INT;
 		sampler.format = GL_RGBA_INTEGER;
-		sampler.internal_format = GL_RGBA32UI;
+		sampler.internal_format = GL_RGBA8UI;//GL_RGBA32UI;
 		sampler.return_type = "uvec4";
 	} else if (strstr(name, "Shadow")) {
 		/* Shadow Sampler */
@@ -302,7 +302,7 @@ select_sampler(const char *name)
 	} else {
 		sampler.data_type = GL_FLOAT;
 		sampler.format = GL_RGBA;
-		sampler.internal_format = GL_RGBA32F;
+		sampler.internal_format = GL_RGBA;//GL_RGBA32F;
 		sampler.return_type = "vec4";
 	}
 
