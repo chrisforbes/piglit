@@ -862,6 +862,8 @@ add_concurrent_test(arb_texture_multisample, 'arb_texture_multisample-sample-mas
 add_concurrent_test(arb_texture_multisample, 'arb_texture_multisample-sample-mask-value')
 add_concurrent_test(arb_texture_multisample, 'arb_texture_multisample-sample-mask-execution')
 add_concurrent_test(arb_texture_multisample, 'arb_texture_multisample-sample-mask-execution -tex')
+add_concurrent_test(arb_texture_multisample, 'arb_texture_multisample-texel-fetch-execution vs')
+add_concurrent_test(arb_texture_multisample, 'arb_texture_multisample-texel-fetch-execution fs')
 textureSize_samplers_atm = ['sampler2DMS', 'isampler2DMS', 'usampler2DMS',
 							'sampler2DMSArray', 'isampler2DMSArray', 'usampler2DMSArray']
 for stage in ['vs', 'fs']:
