@@ -19,38 +19,44 @@ PIGLIT_GL_TEST_CONFIG_END
 GLuint fbo, tex, shader, prog;
 GLint u_sample;
 GLuint shader_stage = 0;
+int sample_count;
+
+struct sample_info
+{
+    float color[4];
+    float draw[4];
+    int probe[2];
+};
+
+struct sample_info samples[] = {
+    { {1,0,0,1}, {-1,-1,1,1}, {16,16} },
+    { {0,1,0,1}, { 0,-1,1,1}, {48,16} },
+    { {0,0,1,1}, { 0, 0,1,1}, {48,48} },
+    { {1,1,1,1}, {-1, 0,1,1}, {16,48} },
+};
 
 enum piglit_result
 piglit_display(void)
 {
-    float red[] = {1,0,0,1};
-    float green[] = {0,1,0,1};
-    float blue[] = {0,0,1,1};
-    float white[] = {1,1,1,1};
-
     bool pass = true;
+
+    int i;
 
     glClearColor(0.2,0.2,0.2,1.0);
     glClear(GL_COLOR_BUFFER_BIT);
 
     glUseProgram(prog);
 
-    glUniform1i(u_sample, 0);
-    piglit_draw_rect(-1,-1,1,1);
+    for (i=0; i < sample_count; i++) {
+        struct sample_info *s = &samples[i];
+        glUniform1i(u_sample, i);
+        piglit_draw_rect(s->draw[0], s->draw[1], s->draw[2], s->draw[3]);
+    }
 
-    glUniform1i(u_sample, 1);
-    piglit_draw_rect(0,-1,1,1);
-
-    glUniform1i(u_sample, 2);
-    piglit_draw_rect(0,0,1,1);
-
-    glUniform1i(u_sample, 3);
-    piglit_draw_rect(-1,0,1,1);
-
-    pass = piglit_probe_pixel_rgba(16, 16, red) && pass;
-    pass = piglit_probe_pixel_rgba(48, 16, green) && pass;
-    pass = piglit_probe_pixel_rgba(48, 48, blue) && pass;
-    pass = piglit_probe_pixel_rgba(16, 48, white) && pass;
+    for (i=0; i < sample_count; i++) {
+        struct sample_info *s = &samples[i];
+        pass = piglit_probe_pixel_rgba(s->probe[0], s->probe[1], s->color);
+    }
 
     piglit_present_results();
 
@@ -58,23 +64,51 @@ piglit_display(void)
 }
 
 void
+usage(int argc, char **argv)
+{
+    printf("usage: %s vs|fs samplecount\n", argv[0]);
+    piglit_report_result(PIGLIT_SKIP);
+}
+
+void
 piglit_init(int argc, char **argv)
 {
+    int i;
+    int max_samples;
+    sample_count = 0;
+
     piglit_require_extension("GL_ARB_texture_multisample");
 
-    while (++argv,--argc) {
-        if (!strcmp(*argv, "vs"))
-            shader_stage = GL_VERTEX_SHADER;
-        else if (!strcmp(*argv, "fs"))
-            shader_stage = GL_FRAGMENT_SHADER;
+    if (argc != 3)
+        usage(argc, argv);
+
+    if (!strcmp(argv[1], "vs"))
+        shader_stage = GL_VERTEX_SHADER;
+    else if (!strcmp(argv[1], "fs"))
+        shader_stage = GL_FRAGMENT_SHADER;
+    else
+        usage(argc, argv);
+
+    sample_count = atoi(argv[2]);
+    glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
+
+    if (sample_count > max_samples) {
+        printf("sample count of %d not supported.\n",
+                sample_count);
+        piglit_report_result(PIGLIT_SKIP);
     }
 
+    if (sample_count > sizeof(samples) / sizeof(*samples)) {
+        printf("sample count of %d not supported by this test, extend it\n",
+                sample_count);
+        piglit_report_result(PIGLIT_SKIP);
+    }
 
     glGenFramebuffers(1, &fbo);
     glGenTextures(1, &tex);
     glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, tex);
     glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE,
-                            4, GL_RGBA, 64, 64, GL_TRUE);
+                            sample_count, GL_RGBA, 64, 64, GL_TRUE);
 
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
@@ -86,21 +120,12 @@ piglit_init(int argc, char **argv)
     /* write test pattern: red,green,blue,white */
     glEnable(GL_SAMPLE_MASK);
 
-    glSampleMaski(0, (1<<0));
-    glColor4f(1.0,0.0,0.0,1.0);
-    piglit_draw_rect(-1,-1,2,2);
-
-    glSampleMaski(0, (1<<1));
-    glColor4f(0.0,1.0,0.0,1.0);
-    piglit_draw_rect(-1,-1,2,2);
-
-    glSampleMaski(0, (1<<2));
-    glColor4f(0.0,0.0,1.0,1.0);
-    piglit_draw_rect(-1,-1,2,2);
-
-    glSampleMaski(0, (1<<3));
-    glColor4f(1.0,1.0,1.0,1.0);
-    piglit_draw_rect(-1,-1,2,2);
+    for (i=0; i<sample_count; i++) {
+        struct sample_info *s = &samples[i];
+        glSampleMaski(0, (1<<i));
+        glColor4fv(s->color);
+        piglit_draw_rect(-1,-1,2,2);
+    }
 
     glDisable(GL_SAMPLE_MASK);
 
@@ -142,8 +167,7 @@ piglit_init(int argc, char **argv)
         break;
 
     default:
-        printf("Please provide shader type: `vs` or `fs`\n");
-        piglit_report_result(PIGLIT_FAIL);
+        assert(0);
     }
 
     if (!prog || !shader)

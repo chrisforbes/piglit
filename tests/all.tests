@@ -857,13 +857,15 @@ for sample_count in [2,4,6,8,16]:
     # fb-completeness
     spec['ARB_texture_multisample/fb-completeness/%d' % (sample_count,)] = \
         concurrent_test('arb_texture_multisample-fb-completeness %d' % (sample_count,))
+    # texel-fetch execution
+    for stage in ['vs','fs']:
+        spec['ARB_texture_multisample/texel-fetch-execution/%d/%s' % (sample_count,stage)] =\
+            concurrent_test('arb_texture_multisample-texel-fetch-execution %s %d' % (stage,sample_count))
 add_concurrent_test(arb_texture_multisample, 'arb_texture_multisample-texstate')
 add_concurrent_test(arb_texture_multisample, 'arb_texture_multisample-sample-mask')
 add_concurrent_test(arb_texture_multisample, 'arb_texture_multisample-sample-mask-value')
 add_concurrent_test(arb_texture_multisample, 'arb_texture_multisample-sample-mask-execution')
 add_concurrent_test(arb_texture_multisample, 'arb_texture_multisample-sample-mask-execution -tex')
-add_concurrent_test(arb_texture_multisample, 'arb_texture_multisample-texel-fetch-execution vs')
-add_concurrent_test(arb_texture_multisample, 'arb_texture_multisample-texel-fetch-execution fs')
 textureSize_samplers_atm = ['sampler2DMS', 'isampler2DMS', 'usampler2DMS',
 							'sampler2DMSArray', 'isampler2DMSArray', 'usampler2DMSArray']
 for stage in ['vs', 'fs']:
