@@ -15,6 +15,7 @@ piglit_display(void)
 
 #define SURFACE_WIDTH 64
 #define SURFACE_HEIGHT 64
+#define SURFACE_DEPTH 2     // for GL_TEXTURE_2D_MULTISAMPLE_ARRAY
 
 struct attachment_info
 {
@@ -24,6 +25,7 @@ struct attachment_info
     bool fixedsamplelocations;
     GLuint format;      // override internalformat; if zero, will choose something
                         // reasonable based on the attachment
+    int layer;          // for GL_TEXTURE_2D_MULTISAMPLE_ARRAY, the layer to attach
 };
 
 struct test_info
@@ -99,6 +101,18 @@ struct test_info tests[] = {
             { 0 },
         }
     },
+    {   "msaa_color_layer", GL_FRAMEBUFFER_COMPLETE,
+        {   { GL_TEXTURE_2D_MULTISAMPLE_ARRAY, GL_COLOR_ATTACHMENT0, GL_TRUE, GL_TRUE,
+                .layer=0 },
+            { 0 },
+        }
+    },
+    {   "msaa_color_nonzero_layer", GL_FRAMEBUFFER_COMPLETE,
+        {   { GL_TEXTURE_2D_MULTISAMPLE_ARRAY, GL_COLOR_ATTACHMENT0, GL_TRUE, GL_TRUE,
+                .layer=1 },
+            { 0 },
+        }
+    },
     { 0 },
 };
 
@@ -169,9 +183,11 @@ exec_test(struct test_info *info, int sample_count)
 
     for (att=info->attachments; att->target; att++) {
         int attachment_sample_count = att->multisample ? sample_count : 0;
-        printf("  Att target=%x att=%x samples=%d dims=%d,%d fixed=%d\n",
+        printf("  Att target=%x att=%x samples=%d dims=%d,%d,%d fixed=%d\n",
                att->target, att->attachment, attachment_sample_count,
-               SURFACE_WIDTH, SURFACE_HEIGHT, att->fixedsamplelocations);
+               SURFACE_WIDTH, SURFACE_HEIGHT,
+               att->target == GL_TEXTURE_2D_MULTISAMPLE_ARRAY ? SURFACE_DEPTH : 1,
+               att->fixedsamplelocations);
 
         switch (att->target) {
         case GL_TEXTURE_2D_MULTISAMPLE:
@@ -187,6 +203,21 @@ exec_test(struct test_info *info, int sample_count)
 
             glFramebufferTexture2D(GL_FRAMEBUFFER, att->attachment,
                                    att->target, tex, 0);
+            break;
+
+        case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:
+            glGenTextures(1, &tex);
+            glBindTexture(GL_TEXTURE_2D_MULTISAMPLE_ARRAY, tex);
+            glTexImage3DMultisample(GL_TEXTURE_2D_MULTISAMPLE_ARRAY,
+                    attachment_sample_count, choose_format(att),
+                    SURFACE_WIDTH, SURFACE_HEIGHT, SURFACE_DEPTH,
+                    att->fixedsamplelocations);
+
+            if (!piglit_check_gl_error(GL_NO_ERROR))
+                return PIGLIT_FAIL;
+
+            glFramebufferTextureLayer(GL_FRAMEBUFFER, att->attachment,
+                    tex, 0, att->layer);
             break;
 
         case GL_RENDERBUFFER:
