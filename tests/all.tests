@@ -1049,6 +1049,11 @@ add_concurrent_test(arb_occlusion_query, 'occlusion_query_meta_fragments')
 add_concurrent_test(arb_occlusion_query, 'occlusion_query_meta_no_fragments')
 add_concurrent_test(arb_occlusion_query, 'occlusion_query_order')
 
+# Group EXT_direct_state_access
+ext_dsa = Group()
+spec['EXT_direct_state_access'] = ext_dsa
+add_concurrent_test(ext_dsa, 'ext_dsa-matrixload')
+
 # Group ARB_sampler_objects
 arb_sampler_objects = Group()
 spec['ARB_sampler_objects'] = arb_sampler_objects
