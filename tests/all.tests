@@ -882,6 +882,12 @@ arb_point_sprite = Group()
 spec['ARB_point_sprite'] = arb_point_sprite
 add_plain_test(arb_point_sprite, 'point-sprite')
 
+# Group ARB_texture_gather
+arb_texture_gather = Group()
+spec['ARB_texture_gather'] = arb_texture_gather
+add_concurrent_test(arb_texture_gather, 'arb_texture_gather-minmax')
+add_concurrent_test(arb_texture_gather, 'arb_texture_gather-texture-gather-offset-limits')
+
 # Group ARB_texture_multisample
 samplers_atm = ['sampler2DMS', 'isampler2DMS', 'usampler2DMS',
 				'sampler2DMSArray', 'isampler2DMSArray', 'usampler2DMSArray']
