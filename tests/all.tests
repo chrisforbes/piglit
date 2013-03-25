@@ -887,6 +887,7 @@ arb_texture_gather = Group()
 spec['ARB_texture_gather'] = arb_texture_gather
 add_concurrent_test(arb_texture_gather, 'arb_texture_gather-minmax')
 add_concurrent_test(arb_texture_gather, 'arb_texture_gather-texture-gather-offset-limits')
+add_concurrent_test(arb_texture_gather, 'arb_texture_gather-textureGather')
 
 # Group ARB_texture_multisample
 samplers_atm = ['sampler2DMS', 'isampler2DMS', 'usampler2DMS',
