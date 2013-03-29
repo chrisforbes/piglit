@@ -54,30 +54,47 @@ fill_texture(int w, int h, int dx, int dy, int chan)
     free(data);
 }
 
-void
-piglit_init(int argc, char **argv)
-{
-    GLuint tex[2], fs, prog;
-    int i,j;
-    char const *shader;
-    char const *swizzle = "r";
-    piglit_require_extension("GL_ARB_texture_gather");
+static char const *swizzles[] = {"r","g","b","a"};
+static GLenum swizzleEnums[] = {GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA};
+static GLuint tex[2];
 
-    glGenTextures(2, tex);
+static void
+test_swizzle(int chan)
+{
+    char const *swizzle = swizzles[chan];
+    GLuint fs, prog;
+    float half_gray[] = {0.5,0.5,0.5,0.5};
+
+    if (chan != 0 && !piglit_is_extension_supported("GL_ARB_texture_swizzle")) {
+        piglit_report_subtest_result(PIGLIT_SKIP, swizzle);
+        return;
+    }
 
     glActiveTexture(GL_TEXTURE0 + 0);
     glBindTexture(GL_TEXTURE_2D, tex[0]);
-    fill_texture(64, 64, 1, 0, 0 /* red channel */);
+    fill_texture(64, 64, 1, 0, chan);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    if (chan != 0) {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, swizzleEnums[chan]);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_ZERO);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_ZERO);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_ZERO);
+    }
 
     glActiveTexture(GL_TEXTURE0 + 1);
     glBindTexture(GL_TEXTURE_2D, tex[1]);
-    fill_texture(64, 64, 0, 1, 0 /* red channel */);
+    fill_texture(64, 64, 0, 1, chan);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    if (chan != 0) {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, swizzleEnums[chan]);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_ZERO);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_ZERO);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_ZERO);
+    }
 
-    asprintf(&shader,
+    fs = piglit_compile_shader_text(GL_FRAGMENT_SHADER,
         "#version 130\n"
         "#extension GL_ARB_texture_gather: require\n"
         "\n"
@@ -88,10 +105,10 @@ piglit_init(int argc, char **argv)
         "{\n"
         "   vec4 g = textureGather(s, tc);\n"
         "   float ofs = 1.0/128.0;\n"
-        "   float v00 = texture(s, tc).%s;\n"
-        "   float v10 = texture(s, tc + vec2(ofs,0)).%s;\n"
-        "   float v01 = texture(s, tc + vec2(0,ofs)).%s;\n"
-        "   float v11 = texture(s, tc + vec2(ofs,ofs)).%s;\n"
+        "   float v00 = texture(s, tc).r;\n"
+        "   float v10 = texture(s, tc + vec2(ofs,0)).r;\n"
+        "   float v01 = texture(s, tc + vec2(0,ofs)).r;\n"
+        "   float v11 = texture(s, tc + vec2(ofs,ofs)).r;\n"
         "   \n"
         "   return 0.5 + 60 * (g - vec4(v01,v11,v10,v00));\n"
         "}\n"
@@ -100,32 +117,44 @@ piglit_init(int argc, char **argv)
         "{\n"
         "   vec2 tc = gl_FragCoord.xy / 64.0;\n"
         "   gl_FragColor = 0.5 * check(s0, tc) + 0.5 * check(s1, tc);\n"
-        "}\n",
-        swizzle, swizzle, swizzle, swizzle);
-
-    fs = piglit_compile_shader_text(GL_FRAGMENT_SHADER, shader);
+        "}\n");
     prog = piglit_link_simple_program(0, fs);
     if (!fs || !prog) {
         printf("Failed to compile/link shader\n");
-        piglit_report_result(PIGLIT_FAIL);
+        piglit_report_subtest_result(PIGLIT_FAIL, swizzle);
+        return;
     }
 
     glUseProgram(prog);
 
     glUniform1i(glGetUniformLocation(prog, "s0"), 0);
     glUniform1i(glGetUniformLocation(prog, "s1"), 1);
+
+    glClearColor(0.2,0.2,0.2,0.2);
+    glClear(GL_COLOR_BUFFER_BIT);
+    piglit_draw_rect(-1,-1,2,2);
+    if (!piglit_probe_rect_rgba(1, 1, piglit_width-2, piglit_height-2, half_gray)) {
+        piglit_report_subtest_result(PIGLIT_FAIL, swizzle);
+        return;
+    }
+
+    piglit_report_subtest_result(PIGLIT_PASS, swizzle);
+}
+
+void
+piglit_init(int argc, char **argv)
+{
+    piglit_require_extension("GL_ARB_texture_gather");
+    glGenTextures(2, tex);
 }
 
 enum piglit_result
 piglit_display(void)
 {
-    float half_gray[] = {0.5,0.5,0.5,0.5};
-
-    glClearColor(0.2,0.2,0.2,0.2);
-    glClear(GL_COLOR_BUFFER_BIT);
-    piglit_draw_rect(-1,-1,2,2);
-    if (!piglit_probe_rect_rgba(1, 1, piglit_width-2, piglit_height-2, half_gray))
-        piglit_report_result(PIGLIT_FAIL);
+    test_swizzle(0);
+    test_swizzle(1);
+    test_swizzle(2);
+    test_swizzle(3);
     piglit_present_results();
 
     piglit_report_result(PIGLIT_PASS);
