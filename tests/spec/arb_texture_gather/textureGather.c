@@ -54,8 +54,8 @@ fill_texture(int w, int h, int dx, int dy, int chan)
     free(data);
 }
 
-static char const *swizzles[] = {"r","g","b","a"};
-static GLenum swizzleEnums[] = {GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA};
+static char const *swizzles[] = {"red","green","blue","alpha","zero","one"};
+static GLenum swizzleEnums[] = {GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA, GL_ZERO, GL_ONE};
 static GLuint tex[2];
 
 static void
@@ -72,7 +72,7 @@ test_swizzle(int chan)
 
     glActiveTexture(GL_TEXTURE0 + 0);
     glBindTexture(GL_TEXTURE_2D, tex[0]);
-    fill_texture(64, 64, 1, 0, chan);
+    fill_texture(64, 64, 1, 0, chan > 3 ? 0 : chan);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     if (chan != 0) {
@@ -84,7 +84,7 @@ test_swizzle(int chan)
 
     glActiveTexture(GL_TEXTURE0 + 1);
     glBindTexture(GL_TEXTURE_2D, tex[1]);
-    fill_texture(64, 64, 0, 1, chan);
+    fill_texture(64, 64, 0, 1, chan > 3 ? 0 : chan);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     if (chan != 0) {
