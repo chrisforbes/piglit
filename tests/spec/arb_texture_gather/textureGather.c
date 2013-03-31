@@ -58,17 +58,15 @@ static char const *swizzles[] = {"red","green","blue","alpha","zero","one"};
 static GLenum swizzleEnums[] = {GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA, GL_ZERO, GL_ONE};
 static GLuint tex[2];
 
-static void
+static enum piglit_result
 test_swizzle(int chan)
 {
     char const *swizzle = swizzles[chan];
     GLuint fs, prog;
     float half_gray[] = {0.5,0.5,0.5,0.5};
 
-    if (chan != 0 && !piglit_is_extension_supported("GL_ARB_texture_swizzle")) {
-        piglit_report_subtest_result(PIGLIT_SKIP, swizzle);
-        return;
-    }
+    if (chan != 0 && !piglit_is_extension_supported("GL_ARB_texture_swizzle"))
+        return PIGLIT_SKIP;
 
     glActiveTexture(GL_TEXTURE0 + 0);
     glBindTexture(GL_TEXTURE_2D, tex[0]);
@@ -121,8 +119,7 @@ test_swizzle(int chan)
     prog = piglit_link_simple_program(0, fs);
     if (!fs || !prog) {
         printf("Failed to compile/link shader\n");
-        piglit_report_subtest_result(PIGLIT_FAIL, swizzle);
-        return;
+        return PIGLIT_FAIL;
     }
 
     glUseProgram(prog);
@@ -133,12 +130,10 @@ test_swizzle(int chan)
     glClearColor(0.2,0.2,0.2,0.2);
     glClear(GL_COLOR_BUFFER_BIT);
     piglit_draw_rect(-1,-1,2,2);
-    if (!piglit_probe_rect_rgba(1, 1, piglit_width-2, piglit_height-2, half_gray)) {
-        piglit_report_subtest_result(PIGLIT_FAIL, swizzle);
-        return;
-    }
+    if (!piglit_probe_rect_rgba(1, 1, piglit_width-2, piglit_height-2, half_gray))
+        return PIGLIT_FAIL;
 
-    piglit_report_subtest_result(PIGLIT_PASS, swizzle);
+    return PIGLIT_PASS;
 }
 
 void
@@ -151,10 +146,10 @@ piglit_init(int argc, char **argv)
 enum piglit_result
 piglit_display(void)
 {
-    test_swizzle(0);
-    test_swizzle(1);
-    test_swizzle(2);
-    test_swizzle(3);
+    int i;
+    for (i=0; i<6; i++) {
+        piglit_report_subtest_result(test_swizzle(i), swizzles[i]);
+    }
     piglit_present_results();
 
     piglit_report_result(PIGLIT_PASS);
