@@ -163,7 +163,18 @@ test_swizzle(int chan, GLenum stage)
 
     glClearColor(0.2,0.2,0.2,0.2);
     glClear(GL_COLOR_BUFFER_BIT);
-    piglit_draw_rect(-1,-1,2,2);
+
+    if (stage == GL_FRAGMENT_SHADER)
+        piglit_draw_rect(-1,-1,2,2);
+    else {
+        int i,j;
+        glBegin(GL_POINTS);
+        for (i=0; i<64; i++)
+            for (j=0; j<64; j++)
+                glVertex2f(i,j);
+        glEnd();
+
+    }
     if (!piglit_probe_rect_rgba(1, 1, piglit_width-2, piglit_height-2, half_gray))
         return PIGLIT_FAIL;
 
