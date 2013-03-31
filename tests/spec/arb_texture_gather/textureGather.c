@@ -59,10 +59,10 @@ static GLenum swizzleEnums[] = {GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA, GL_ZERO, GL
 static GLuint tex[2];
 
 static enum piglit_result
-test_swizzle(int chan)
+test_swizzle(int chan, GLenum stage)
 {
     char const *swizzle = swizzles[chan];
-    GLuint fs, prog;
+    GLuint shader, prog;
     float half_gray[] = {0.5,0.5,0.5,0.5};
 
     if (chan != 0 && !piglit_is_extension_supported("GL_ARB_texture_swizzle"))
@@ -92,32 +92,66 @@ test_swizzle(int chan)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_ZERO);
     }
 
-    fs = piglit_compile_shader_text(GL_FRAGMENT_SHADER,
-        "#version 130\n"
-        "#extension GL_ARB_texture_gather: require\n"
-        "\n"
-        "uniform sampler2D s0;\n"
-        "uniform sampler2D s1;\n"
-        "\n"
-        "vec4 check(sampler2D s, vec2 tc)\n"
-        "{\n"
-        "   vec4 g = textureGather(s, tc);\n"
-        "   float ofs = 1.0/128.0;\n"
-        "   float v00 = texture(s, tc).r;\n"
-        "   float v10 = texture(s, tc + vec2(ofs,0)).r;\n"
-        "   float v01 = texture(s, tc + vec2(0,ofs)).r;\n"
-        "   float v11 = texture(s, tc + vec2(ofs,ofs)).r;\n"
-        "   \n"
-        "   return 0.5 + 60 * (g - vec4(v01,v11,v10,v00));\n"
-        "}\n"
-        "\n"
-        "void main()\n"
-        "{\n"
-        "   vec2 tc = gl_FragCoord.xy / 64.0;\n"
-        "   gl_FragColor = 0.5 * check(s0, tc) + 0.5 * check(s1, tc);\n"
-        "}\n");
-    prog = piglit_link_simple_program(0, fs);
-    if (!fs || !prog) {
+    if (stage == GL_FRAGMENT_SHADER) {
+        shader = piglit_compile_shader_text(GL_FRAGMENT_SHADER,
+            "#version 130\n"
+            "#extension GL_ARB_texture_gather: require\n"
+            "\n"
+            "uniform sampler2D s0;\n"
+            "uniform sampler2D s1;\n"
+            "\n"
+            "vec4 check(sampler2D s, vec2 tc)\n"
+            "{\n"
+            "   vec4 g = textureGather(s, tc);\n"
+            "   float ofs = 1.0/128.0;\n"
+            "   float v00 = texture(s, tc).r;\n"
+            "   float v10 = texture(s, tc + vec2(ofs,0)).r;\n"
+            "   float v01 = texture(s, tc + vec2(0,ofs)).r;\n"
+            "   float v11 = texture(s, tc + vec2(ofs,ofs)).r;\n"
+            "   \n"
+            "   return 0.5 + 60 * (g - vec4(v01,v11,v10,v00));\n"
+            "}\n"
+            "\n"
+            "void main()\n"
+            "{\n"
+            "   vec2 tc = gl_FragCoord.xy / 64.0;\n"
+            "   gl_FragColor = 0.5 * check(s0, tc) + 0.5 * check(s1, tc);\n"
+            "}\n");
+        prog = piglit_link_simple_program(0, shader);
+    }
+    else if (stage == GL_VERTEX_SHADER) {
+        shader = piglit_compile_shader_text(GL_VERTEX_SHADER,
+            "#version 130\n"
+            "#extension GL_ARB_texture_gather: require\n"
+            "#extension GL_ARB_explicit_attrib_location: require\n"
+            "\n"
+            "uniform sampler2D s0;\n"
+            "uniform sampler2D s1;\n"
+            "\n"
+            "layout(location=0) in vec2 pos;\n"
+            "\n"
+            "vec4 check(sampler2D s, vec2 tc)\n"
+            "{\n"
+            "   vec4 g = textureGather(s, tc);\n"
+            "   float ofs = 1.0/128.0;\n"
+            "   float v00 = texture(s, tc).r;\n"
+            "   float v10 = texture(s, tc + vec2(ofs,0)).r;\n"
+            "   float v01 = texture(s, tc + vec2(0,ofs)).r;\n"
+            "   float v11 = texture(s, tc + vec2(ofs,ofs)).r;\n"
+            "   \n"
+            "   return 0.5 + 60 * (g - vec4(v01,v11,v10,v00));\n"
+            "}\n"
+            "\n"
+            "void main()\n"
+            "{\n"
+            "   vec2 tc = pos / 64.0;\n"
+            "   gl_Position = vec4(pos/32.0 - 1, 0, 1);\n"
+            "   gl_FrontColor = 0.5 * check(s0, tc) + 0.5 * check(s1, tc);\n"
+            "}\n");
+        prog = piglit_link_simple_program(shader, 0);
+    }
+
+    if (!shader || !prog) {
         printf("Failed to compile/link shader\n");
         return PIGLIT_FAIL;
     }
@@ -147,8 +181,14 @@ enum piglit_result
 piglit_display(void)
 {
     int i;
+    char name[32];
     for (i=0; i<6; i++) {
-        piglit_report_subtest_result(test_swizzle(i), swizzles[i]);
+        sprintf(name, "fs-%s", swizzles[i]);
+        piglit_report_subtest_result(test_swizzle(i, GL_FRAGMENT_SHADER), name);
+    }
+    for (i=0; i<6; i++) {
+        sprintf(name, "vs-%s", swizzles[i]);
+        piglit_report_subtest_result(test_swizzle(i, GL_VERTEX_SHADER), name);
     }
     piglit_present_results();
 
