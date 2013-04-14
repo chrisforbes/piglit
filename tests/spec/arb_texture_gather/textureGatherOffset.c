@@ -56,7 +56,6 @@ fill_texture(int w, int h, int dx, int dy, int chan)
 
 static char const *swizzles[] = {"red","green","blue","alpha","zero","one"};
 static GLenum swizzleEnums[] = {GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA, GL_ZERO, GL_ONE};
-static GLuint tex[2];
 
 static enum piglit_result
 test_swizzle(int chan, GLenum stage)
@@ -64,7 +63,9 @@ test_swizzle(int chan, GLenum stage)
     char const *swizzle = swizzles[chan];
     GLuint shader, prog;
     float half_gray[] = {0.5,0.5,0.5,0.5};
+    GLuint tex[2];
 
+    glGenTextures(2, tex);
     if (chan != 0 && !piglit_is_extension_supported("GL_ARB_texture_swizzle"))
         return PIGLIT_SKIP;
 
@@ -187,7 +188,6 @@ void
 piglit_init(int argc, char **argv)
 {
     piglit_require_extension("GL_ARB_texture_gather");
-    glGenTextures(2, tex);
 }
 
 enum piglit_result
