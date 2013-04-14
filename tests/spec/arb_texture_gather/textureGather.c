@@ -134,13 +134,7 @@ test_swizzle(int chan, GLenum stage)
             "vec4 check(sampler2D s, vec2 tc)\n"
             "{\n"
             "   vec4 g = textureGather(s, tc);\n"
-            "   float ofs = 1.0/128.0;\n"
-            "   float v00 = texture(s, tc).r;\n"
-            "   float v10 = texture(s, tc + vec2(ofs,0)).r;\n"
-            "   float v01 = texture(s, tc + vec2(0,ofs)).r;\n"
-            "   float v11 = texture(s, tc + vec2(ofs,ofs)).r;\n"
-            "   \n"
-            "   return 0.5 + 60 * (g - vec4(v01,v11,v10,v00));\n"
+            "   return g;\n"
             "}\n"
             "\n"
             "void main()\n"
@@ -197,11 +191,10 @@ piglit_display(void)
         sprintf(name, "fs-%s", swizzles[i]);
         piglit_report_subtest_result(test_swizzle(i, GL_FRAGMENT_SHADER), name);
     }
-    for (i=0; i<6; i++) {
+    for (i=1; i<2; i++) {
         sprintf(name, "vs-%s", swizzles[i]);
         piglit_report_subtest_result(test_swizzle(i, GL_VERTEX_SHADER), name);
     }
     piglit_present_results();
-
-    piglit_report_result(PIGLIT_PASS);
+    return PIGLIT_PASS;
 }
