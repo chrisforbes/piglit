@@ -37,7 +37,7 @@ PIGLIT_GL_TEST_CONFIG_END
  * - render a blue thing
  *
  * - blit from the MSAA buffer to the winsys buffer
- * - ensure that the pixels are purple
+ * - ensure that the pixels are yellow
  */
 
 GLuint fbo, tex;
@@ -45,7 +45,7 @@ GLuint fbo, tex;
 enum piglit_result
 piglit_display(void)
 {
-    float half_purple[] = { 0.5f, 0.5f, 0.0f, 1.0f };
+    float half_yellow[] = { 0.5f, 0.5f, 0.0f, 1.0f };
     bool pass = true;
 
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -80,8 +80,8 @@ piglit_display(void)
     glBindFramebuffer(GL_READ_FRAMEBUFFER, piglit_winsys_fbo);
 
     /* the resolve done by the blit should
-     * blend the red and blue samples together */
-    pass = piglit_probe_pixel_rgba(32, 32, half_purple) && pass;
+     * blend the red and green samples together */
+    pass = piglit_probe_pixel_rgba(32, 32, half_yellow) && pass;
 
     piglit_present_results();
 
