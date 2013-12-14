@@ -35,7 +35,7 @@
 PIGLIT_GL_TEST_CONFIG_BEGIN
 
 	config.supports_gl_compat_version = 20;
-	config.supports_gl_core_version = 31;
+//	config.supports_gl_core_version = 31;
 
 	config.window_visual = PIGLIT_GL_VISUAL_RGBA | PIGLIT_GL_VISUAL_DOUBLE;
 
@@ -66,7 +66,6 @@ test_render_levels(void)
 	glBindTexture(GL_TEXTURE_2D, tex);
 
 	glTexStorage2D(GL_TEXTURE_2D, levels, GL_RGBA8, width, height);
-	glEnable(GL_TEXTURE_2D);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
@@ -144,7 +143,6 @@ test_render_levels(void)
 		glDeleteTextures(1, &new_tex);
 	}
 
-	glDisable(GL_TEXTURE_2D);
 	glDeleteTextures(1, &tex);
 	return pass;
 }
