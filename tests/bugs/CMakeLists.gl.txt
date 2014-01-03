@@ -30,5 +30,6 @@ piglit_add_executable (fdo28551 fdo28551.c)
 piglit_add_executable (fdo31934 fdo31934.c)
 piglit_add_executable (tri-tex-crash tri-tex-crash.c)
 piglit_add_executable (vbo-buffer-unmap vbo-buffer-unmap.c)
+piglit_add_executable (tesseract-sched-crash tesseract-sched-crash.c)
 
 # vim: ft=cmake:
