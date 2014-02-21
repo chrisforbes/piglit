@@ -25,6 +25,7 @@ piglit_add_executable(arb_texture_view-clear-into-view-2d clear-into-view-2d.c c
 piglit_add_executable(arb_texture_view-clear-into-view-2d-array clear-into-view-2d-array.c common.c)
 piglit_add_executable(arb_texture_view-clear-into-view-layered clear-into-view-layered.c common.c)
 piglit_add_executable(arb_texture_view-rendering-formats rendering-formats.c)
+piglit_add_executable(arb_texture_view-rendering-formats2 rendering-formats2.c)
 piglit_add_executable(arb_texture_view-copytexsubimage-layers copytexsubimage-layers.c common.c)
 
 # vim: ft=cmake:
