@@ -28,5 +28,6 @@ piglit_add_executable(arb_texture_view-rendering-formats rendering-formats.c)
 piglit_add_executable(arb_texture_view-rendering-formats2 rendering-formats2.c)
 piglit_add_executable(arb_texture_view-copytexsubimage-layers copytexsubimage-layers.c common.c)
 piglit_add_executable(arb_texture_view-format-consistency-get format-consistency-get.c)
+piglit_add_executable(arb_texture_view-format-consistency-render format-consistency-render.c)
 
 # vim: ft=cmake:

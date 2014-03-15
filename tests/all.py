@@ -2034,6 +2034,7 @@ arb_texture_view['clear-into-view-2d-array'] = concurrent_test('arb_texture_view
 arb_texture_view['clear-into-view-layered'] = concurrent_test('arb_texture_view-clear-into-view-layered')
 arb_texture_view['copytexsubimage-layers'] = concurrent_test('arb_texture_view-copytexsubimage-layers')
 arb_texture_view['format-consistency-get'] = concurrent_test('arb_texture_view-format-consistency-get')
+arb_texture_view['format-consistency-render'] = concurrent_test('arb_texture_view-format-consistency-render')
 
 tdfx_texture_compression_fxt1 = Group()
 spec['3DFX_texture_compression_FXT1'] = tdfx_texture_compression_fxt1
