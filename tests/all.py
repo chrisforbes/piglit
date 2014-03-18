@@ -1551,6 +1551,7 @@ add_concurrent_test(arb_tessellation_shader, 'arb_tessellation_shader-invalid-pr
 arb_tessellation_shader['built-in-constants'] = concurrent_test('built-in-constants ' +  os.path.join(testsDir, 'spec', 'arb_tessellation_shader', 'minimum-maximums.txt'))
 add_concurrent_test(arb_tessellation_shader, 'arb_tessellation_shader-minmax')
 add_concurrent_test(arb_tessellation_shader, 'arb_tessellation_shader-large-uniforms')
+add_concurrent_test(arb_tessellation_shader, 'arb_tessellation_shader-layout-mismatch')
 import_glsl_parser_tests(arb_tessellation_shader,
                          os.path.join(testsDir, 'spec',
                          'arb_tessellation_shader'), ['compiler'])
