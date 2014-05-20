@@ -2678,6 +2678,10 @@ add_texwrap_format_tests(ext_texture_srgb, 'GL_EXT_texture_sRGB-s3tc', '-s3tc')
 add_plain_test(ext_texture_srgb, 'fbo-srgb')
 add_plain_test(ext_texture_srgb, 'tex-srgb')
 
+arb_compressed_texture_pixel_storage = {}
+spec['ARB_compressed_texture_pixel_storage'] = arb_compressed_texture_pixel_storage
+add_concurrent_test(arb_compressed_texture_pixel_storage, 'arb_compressed_texture_pixel_storage-api')
+
 ext_timer_query = {}
 spec['EXT_timer_query'] = ext_timer_query
 ext_timer_query['time-elapsed'] = concurrent_test('ext_timer_query-time-elapsed')
