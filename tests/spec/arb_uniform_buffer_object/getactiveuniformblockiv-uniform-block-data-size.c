@@ -40,7 +40,6 @@
 PIGLIT_GL_TEST_CONFIG_BEGIN
 
 	config.supports_gl_compat_version = 10;
-	config.supports_gl_core_version = 31;
 	config.window_visual = PIGLIT_GL_VISUAL_RGBA | PIGLIT_GL_VISUAL_DOUBLE;
 
 PIGLIT_GL_TEST_CONFIG_END
@@ -54,9 +53,9 @@ align(int v, int a)
 static bool
 test_format(const struct uniform_type *type, bool row_major)
 {
-	/* Using 140 to get unsigned ints. */
 	const char *fs_template =
-		"#version 140\n"
+		"#version %d\n"
+		"#extension GL_ARB_uniform_buffer_object: require\n"
 		"layout(std140) uniform ubo {\n"
 		"	float align_test;\n"
 		"	%s%s u;\n"
@@ -71,12 +70,23 @@ test_format(const struct uniform_type *type, bool row_major)
 	int expected;
 	const struct uniform_type *transposed_type;
 
+	if (type->type[0] == 'u' && piglit_get_gl_version() < 30) {
+		printf("%-20s %10s %10d %10s%s\n",
+		       type->type,
+		       row_major ? "y" : "n",
+		       data_size,
+		       "-",
+		       " SKIP");
+		return true;
+	}
+
 	if (row_major)
 		transposed_type = get_transposed_type(type);
 	else
 		transposed_type = type;
 
 	asprintf(&fs_source, fs_template,
+		 type->type[0] == 'u' ? 130 : 120,	/* unsigned requires 1.30 */
 		 row_major ? "layout(row_major) " : "",
 		 type->type);
 	prog = piglit_build_simple_program(NULL, fs_source);
@@ -118,7 +128,7 @@ piglit_init(int argc, char **argv)
 	unsigned int i;
 
 	piglit_require_extension("GL_ARB_uniform_buffer_object");
-	piglit_require_GLSL_version(140);
+	piglit_require_GLSL_version(120);
 
 	printf("%-20s %10s %10s %10s\n",
 	       "type", "row_major", "DATA_SIZE", "expected");

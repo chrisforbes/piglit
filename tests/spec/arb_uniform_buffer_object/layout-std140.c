@@ -91,7 +91,7 @@ static const struct result {
 };
 
 static const char frag_shader_text[] =
-	"#version 130\n"
+	"#version 120\n"
 	"#extension GL_ARB_uniform_buffer_object : enable \n"
 	"\n"
 	"struct f_struct {\n"
@@ -100,7 +100,7 @@ static const char frag_shader_text[] =
 	"};\n"
 	"\n"
 	"struct o_struct {\n"
-	"	uvec3 j;\n"
+	"	ivec3 j;\n"
 	"	vec2 k;\n"
 	"	float l[2];\n"
 	"	vec2 m;\n"
@@ -145,7 +145,7 @@ static const char frag_shader_text[] =
 static void
 init(void)
 {
-	piglit_require_GLSL_version(130);
+	piglit_require_GLSL_version(120);
 	piglit_require_extension("GL_ARB_uniform_buffer_object");
 
 	prog = piglit_build_simple_program(NULL, frag_shader_text);

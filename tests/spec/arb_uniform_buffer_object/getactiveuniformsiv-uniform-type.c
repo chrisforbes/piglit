@@ -33,7 +33,6 @@
 PIGLIT_GL_TEST_CONFIG_BEGIN
 
 	config.supports_gl_compat_version = 10;
-	config.supports_gl_core_version = 31;
 	config.window_visual = PIGLIT_GL_VISUAL_DOUBLE | PIGLIT_GL_VISUAL_RGBA;
 
 PIGLIT_GL_TEST_CONFIG_END
@@ -41,9 +40,9 @@ PIGLIT_GL_TEST_CONFIG_END
 static bool
 test_format(const struct uniform_type *type)
 {
-	/* Using 140 to get unsigned ints. */
 	const char *fs_template =
-		"#version 140\n"
+		"#version %d\n"
+		"#extension GL_ARB_uniform_buffer_object: require\n"
 		"layout(std140) uniform ubo {\n"
 		"	float align_test;\n"
 		"	%s u;\n"
@@ -67,7 +66,18 @@ test_format(const struct uniform_type *type)
 		deref = "u[0].x";
 	}
 
-	asprintf(&fs_source, fs_template, type->type, deref);
+	if (type->type[0] == 'u' && piglit_get_gl_version() < 30) {
+		printf("%-20s %20s %20s%s\n",
+		       type->type,
+		       "-",
+		       "-",
+		       " SKIP");
+		return true;
+	}
+
+	asprintf(&fs_source, fs_template,
+		 type->type[0] == 'u' ? 130 : 120,
+		 type->type, deref);
 	prog = piglit_build_simple_program(NULL, fs_source);
 	free(fs_source);
 
@@ -93,7 +103,7 @@ piglit_init(int argc, char **argv)
 	unsigned int i;
 
 	piglit_require_extension("GL_ARB_uniform_buffer_object");
-	piglit_require_GLSL_version(140);
+	piglit_require_GLSL_version(120);
 
 	printf("%-20s %20s %20s\n", "type", "GL_UNIFORM_TYPE", "expected");
 	printf("--------------------------------------------------------------\n");
