@@ -1892,6 +1892,31 @@ set_patch_parameter(const char *line)
 }
 
 void
+dump_attrib_binding(const char *line)
+{
+	char name[512];
+	int result;
+	sscanf(line, "%s", name);
+	result = glGetAttribLocation(prog, name);
+	fprintf(stderr, "attrib %s location = %d\n", line, result);
+}
+
+void
+dump_active_attrib(const char *line)
+{
+	int index;
+	char namebuf[512];
+	GLsizei size;
+	GLenum type;
+	sscanf(line, "%d", &index);
+	namebuf[0] = 0;
+	glGetActiveAttrib(prog, index, 512, NULL, &size, &type, namebuf);
+
+	fprintf(stderr, "activeattrib %d name='%s' size=%d type=%d\n",
+			index, namebuf, size, type);
+}
+
+void
 set_provoking_vertex(const char *line)
 {
 	if (string_match("first", line)) {
@@ -2581,6 +2606,10 @@ piglit_display(void)
 			set_parameter(line + strlen("parameter "));
 		} else if (string_match("patch parameter ", line)) {
 			set_patch_parameter(line + strlen("patch parameter "));
+		} else if (string_match("get attrib ", line)) {
+			dump_attrib_binding(line + strlen("get attrib "));
+		} else if (string_match("getactiveattrib ", line)) {
+			dump_active_attrib(line + strlen("getactiveattrib "));
 		} else if (string_match("provoking vertex ", line)) {
 			set_provoking_vertex(line + strlen("provoking vertex "));
 		} else if (string_match("link error", line)) {
