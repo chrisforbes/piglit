@@ -622,16 +622,15 @@ class TessellationShaderTest(ShaderTest):
         return ext
 
     def draw_command(self):
-        return 'draw arrays GL_PATCHES 0 3\n'
+        return 'patch parameter vertices 1\ndraw arrays GL_PATCHES 0 1\n'
 
     def make_vertex_shader(self):
         shader = \
 """in vec4 vertex;
-out vec4 vertex_to_tcs;
 
 void main()
 {
-     vertex_to_tcs = vertex;
+	gl_Position = vertex;
 }
 """
         return shader
@@ -658,13 +657,11 @@ class TessCtrlShaderTest(TessellationShaderTest):
 
     def make_tess_ctrl_shader(self):
         additional_declarations = \
-"""layout(vertices = 3) out;
-in vec4 vertex_to_tcs[];
-out vec4 vertex_to_tes[3];
+"""layout(vertices = 1) out;
 patch out vec4 color_to_tes;
 """
         body = \
-"""  vertex_to_tes[gl_InvocationID] = vertex_to_tcs[gl_InvocationID];
+"""
   color_to_tes = tmp_color;
   gl_TessLevelOuter = float[4](1.0, 1.0, 1.0, 1.0);
   gl_TessLevelInner = float[2](1.0, 1.0);
@@ -681,13 +678,10 @@ patch out vec4 color_to_tes;
 """#extension GL_ARB_tessellation_shader : require
 layout(quads) in;
 
-in vec4 vertex_to_tes[];
 patch in vec4 color_to_tes;
 out vec4 color_to_fs;
 void main() {
-  gl_Position = vertex_to_tes[1]
-              + (vertex_to_tes[0] - vertex_to_tes[1]) * gl_TessCoord[0]
-              + (vertex_to_tes[2] - vertex_to_tes[1]) * gl_TessCoord[1];
+  gl_Position = vec4(gl_TessCoord.xy * 2 - 1, 0, 1);
   color_to_fs = color_to_tes;
 }
 """
